@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { GitUtils } from './gitUtils';
+import { GitUtils } from './GitUtils';
 
 describe('GitUtils', () => {
   describe('findGitRoot', () => {

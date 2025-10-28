@@ -1,6 +1,6 @@
 {
   "name": "gitlab-yaml-parser",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "A comprehensive TypeScript library for parsing and analyzing GitLab CI/CD YAML configurations",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
