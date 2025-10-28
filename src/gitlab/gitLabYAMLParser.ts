@@ -1,23 +1,21 @@
 import * as fs from 'fs';
 import * as yaml from 'js-yaml';
 import { glob } from 'glob';
-import { GitLabFile, GitLabJob, GitLabProject } from './types';
-import { GitLabProjectImpl } from './GitLabProjectImpl';
-import { GitLabYAMLSchema, GitLabReferenceResolver } from './GitLabYAMLSchema';
+import { GitLabFile, GitLabJob, GitLabProject } from '../types';
+import { GitLabProjectImpl } from './gitLabProjectImpl';
+import { GitUtils } from '../git/GitUtils';
 
 export class GitLabYAMLParser {
   private projectPath: string;
-  private yamlSchema: GitLabYAMLSchema;
 
-  constructor(projectPath: string = process.cwd()) {
+  constructor(projectPath: string = GitUtils.findGitRoot()) {
     this.projectPath = projectPath;
-    this.yamlSchema = GitLabYAMLSchema.getInstance();
   }
 
   async parseProject(): Promise<GitLabProject> {
     const files = await this.findGitLabFiles();
     const parsedFiles: GitLabFile[] = [];
- 
+
     for (const filePath of files) {
       try {
         const file = await this.parseFile(filePath);
@@ -31,41 +29,38 @@ export class GitLabYAMLParser {
     return new GitLabProjectImpl(parsedFiles);
   }
 
-  private async findGitLabFiles(): Promise<string[]> {
-    const patterns = [
-      '.gitlab-ci.yml',
-      '.gitlab/**/*.yml'
-    ];
+  async findGitLabFiles(): Promise<string[]> {
+    const patterns = ['.gitlab-ci.yml', '.gitlab/**/*.yml'];
 
     const allFiles: string[] = [];
-    
+
     for (const pattern of patterns) {
-      const files = await glob(pattern, { 
+      const files = await glob(pattern, {
         cwd: this.projectPath,
-        absolute: true 
+        absolute: true,
       });
       allFiles.push(...files);
     }
 
-    return [...new Set(allFiles)]; // Remove duplicates
+    return Array.from(new Set(allFiles)); // Remove duplicates
   }
 
-  private async parseFile(filePath: string): Promise<GitLabFile> {
+  async parseFile(filePath: string): Promise<GitLabFile> {
     const content = fs.readFileSync(filePath, 'utf8');
-    const yamlContent = this.yamlSchema.parseYAML(content) as Record<string, unknown>;
+    const yamlContent = yaml.load(content) as Record<string, unknown>;
 
     if (!yamlContent || typeof yamlContent !== 'object') {
       throw new Error(`Invalid YAML content in ${filePath}`);
     }
 
     const jobs: Record<string, GitLabJob> = {};
-    
+
     // Extract jobs
     for (const [key, value] of Object.entries(yamlContent)) {
       if (key.startsWith('.') || key === 'variables' || key === 'stages' || key === 'include') {
         continue; // Skip hidden jobs, variables, stages, includes
       }
-      
+
       if (typeof value === 'object' && value !== null) {
         const job = this.parseJob(key, value as Record<string, unknown>);
         jobs[key] = job;
@@ -77,11 +72,11 @@ export class GitLabYAMLParser {
       variables: (yamlContent.variables as Record<string, string>) || {},
       jobs,
       stages: yamlContent.stages as string[] | undefined,
-      include: yamlContent.include as unknown[] | undefined
+      include: yamlContent.include as unknown[] | undefined,
     };
   }
 
-  private parseJob(name: string, jobData: Record<string, unknown>): GitLabJob {
+  parseJob(name: string, jobData: Record<string, unknown>): GitLabJob {
     return {
       name,
       before_script: jobData.before_script as string[] | undefined,
@@ -94,35 +89,21 @@ export class GitLabYAMLParser {
       rules: jobData.rules as unknown[] | undefined,
       artifacts: jobData.artifacts as unknown | undefined,
       cache: jobData.cache as unknown | undefined,
-      services: jobData.services as unknown[] | undefined
+      services: jobData.services as unknown[] | undefined,
     };
   }
 
   /**
-   * Check if a value is a GitLab reference
+   * Get the current project path (Git repository root)
    */
-  public isReference(value: any): boolean {
-    return GitLabReferenceResolver.isReference(value);
+  public getProjectPath(): string {
+    return this.projectPath;
   }
 
   /**
-   * Check if a value is a GitLab include
+   * Check if the current project path is a Git repository root
    */
-  public isInclude(value: any): boolean {
-    return GitLabReferenceResolver.isInclude(value);
-  }
-
-  /**
-   * Extract the actual value from a GitLab reference
-   */
-  public extractReferenceValue(value: any): any {
-    return GitLabReferenceResolver.extractValue(value);
-  }
-
-  /**
-   * Resolve references in a GitLab job or file
-   */
-  public resolveReferences(data: any, context?: any): any {
-    return GitLabReferenceResolver.resolveReferences(data, context);
+  public isGitRepository(): boolean {
+    return GitUtils.isGitRepository(this.projectPath);
   }
 }

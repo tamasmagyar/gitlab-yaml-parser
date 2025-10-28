@@ -1,26 +1,16 @@
-export interface GitLabReference {
-  __gitlab_reference: true;
-  value: any;
-}
-
-export interface GitLabInclude {
-  __gitlab_include: true;
-  value: any;
-}
-
 export interface GitLabJob {
   name: string;
-  before_script?: string[] | GitLabReference;
-  script: string[] | GitLabReference;
-  after_script?: string[] | GitLabReference;
-  variables?: Record<string, string> | GitLabReference;
+  before_script?: string[];
+  script: string[];
+  after_script?: string[];
+  variables?: Record<string, string>;
   stage?: string;
-  needs?: string[] | GitLabReference;
-  dependencies?: string[] | GitLabReference;
-  rules?: unknown[] | GitLabReference;
-  artifacts?: unknown | GitLabReference;
-  cache?: unknown | GitLabReference;
-  services?: unknown[] | GitLabReference;
+  needs?: string[];
+  dependencies?: string[];
+  rules?: unknown[];
+  artifacts?: unknown;
+  cache?: unknown;
+  services?: unknown[];
   // Add other job properties as needed
 }
 

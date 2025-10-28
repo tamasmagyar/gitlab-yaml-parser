@@ -1,4 +1,4 @@
-import { GitLabFile, GitLabJob, GitLabProject } from './types';
+import { GitLabFile, GitLabJob, GitLabProject } from '../types';
 
 export class GitLabProjectImpl implements GitLabProject {
   constructor(public files: GitLabFile[]) {}
@@ -13,9 +13,7 @@ export class GitLabProjectImpl implements GitLabProject {
   }
 
   getJobsWithVariable(variableName: string): GitLabJob[] {
-    return this.getAllJobs().filter(job => 
-      job.variables && variableName in job.variables
-    );
+    return this.getAllJobs().filter(job => job.variables && variableName in job.variables);
   }
 
   getJobsByStage(stage: string): GitLabJob[] {

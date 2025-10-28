@@ -1,6 +1,6 @@
-export { GitLabYAMLParser } from './GitLabYAMLParser';
-export { GitLabProjectImpl } from './GitLabProjectImpl';
-export { GitLabYAMLSchema, GitLabReferenceResolver } from './GitLabYAMLSchema';
-export { GitLabFile, GitLabJob, GitLabProject, GitLabReference, GitLabInclude } from './types';
+export { GitLabYAMLParser } from './gitlab/gitLabYAMLParser';
+export { GitLabProjectImpl } from './gitlab/gitLabProjectImpl';
+export { GitLabFile, GitLabJob, GitLabProject } from './types';
+export { GitUtils } from './git/gitUtils';
 
-export { GitLabYAMLParser as default } from './GitLabYAMLParser';
+export { GitLabYAMLParser as default } from './gitlab/gitLabYAMLParser';

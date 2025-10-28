@@ -1,5 +1,5 @@
-import { GitLabProject, GitLabFile, GitLabJob } from './types';
-import { GitLabProjectImpl } from './GitLabProjectImpl';
+import { GitLabProjectImpl } from './gitLabProjectImpl';
+import { GitLabFile } from '../types';
 
 describe('GitLabProjectImpl', () => {
   let mockProject: GitLabProjectImpl;
@@ -15,23 +15,23 @@ describe('GitLabProjectImpl', () => {
             name: 'build-job',
             script: ['npm run build'],
             stage: 'build',
-            variables: { BUILD_VAR: 'build_value' }
+            variables: { BUILD_VAR: 'build_value' },
           },
           'test-job': {
             name: 'test-job',
             script: ['npm test'],
             stage: 'test',
             variables: { TEST_VAR: 'test_value' },
-            needs: ['build-job']
+            needs: ['build-job'],
           },
           'deploy-job': {
             name: 'deploy-job',
             script: ['npm run deploy'],
             stage: 'deploy',
-            variables: { DEPLOY_VAR: 'deploy_value' }
-          }
+            variables: { DEPLOY_VAR: 'deploy_value' },
+          },
         },
-        stages: ['build', 'test', 'deploy']
+        stages: ['build', 'test', 'deploy'],
       },
       {
         path: '/project/.gitlab/includes.yml',
@@ -41,10 +41,10 @@ describe('GitLabProjectImpl', () => {
             name: 'include-job',
             script: ['echo "included"'],
             stage: 'test',
-            variables: { INCLUDE_JOB_VAR: 'include_job_value' }
-          }
-        }
-      }
+            variables: { INCLUDE_JOB_VAR: 'include_job_value' },
+          },
+        },
+      },
     ];
 
     mockProject = new GitLabProjectImpl(mockFiles);
@@ -53,20 +53,15 @@ describe('GitLabProjectImpl', () => {
   describe('getAllJobs', () => {
     it('should return all jobs from all files', () => {
       const allJobs = mockProject.getAllJobs();
-      
+
       expect(allJobs).toHaveLength(4);
-      expect(allJobs.map(job => job.name)).toEqual([
-        'build-job',
-        'test-job', 
-        'deploy-job',
-        'include-job'
-      ]);
+      expect(allJobs.map(job => job.name)).toEqual(['build-job', 'test-job', 'deploy-job', 'include-job']);
     });
 
     it('should return empty array when no files exist', () => {
       const emptyProject = new GitLabProjectImpl([]);
       const jobs = emptyProject.getAllJobs();
-      
+
       expect(jobs).toEqual([]);
     });
 
@@ -75,12 +70,12 @@ describe('GitLabProjectImpl', () => {
         {
           path: '/project/empty.yml',
           variables: {},
-          jobs: {}
-        }
+          jobs: {},
+        },
       ];
       const projectWithoutJobs = new GitLabProjectImpl(filesWithoutJobs);
       const jobs = projectWithoutJobs.getAllJobs();
-      
+
       expect(jobs).toEqual([]);
     });
   });
@@ -88,25 +83,21 @@ describe('GitLabProjectImpl', () => {
   describe('getJobsByFile', () => {
     it('should return jobs from specific file', () => {
       const jobs = mockProject.getJobsByFile('/project/.gitlab-ci.yml');
-      
+
       expect(jobs).toHaveLength(3);
-      expect(jobs.map(job => job.name)).toEqual([
-        'build-job',
-        'test-job',
-        'deploy-job'
-      ]);
+      expect(jobs.map(job => job.name)).toEqual(['build-job', 'test-job', 'deploy-job']);
     });
 
     it('should return jobs from include file', () => {
       const jobs = mockProject.getJobsByFile('/project/.gitlab/includes.yml');
-      
+
       expect(jobs).toHaveLength(1);
       expect(jobs[0].name).toBe('include-job');
     });
 
     it('should return empty array for non-existent file', () => {
       const jobs = mockProject.getJobsByFile('/project/non-existent.yml');
-      
+
       expect(jobs).toEqual([]);
     });
   });
@@ -114,7 +105,7 @@ describe('GitLabProjectImpl', () => {
   describe('getJobsWithVariable', () => {
     it('should return jobs that have specific variable', () => {
       const jobs = mockProject.getJobsWithVariable('BUILD_VAR');
-      
+
       expect(jobs).toHaveLength(1);
       expect(jobs[0].name).toBe('build-job');
       expect(jobs[0].variables).toBeDefined();
@@ -133,21 +124,21 @@ describe('GitLabProjectImpl', () => {
             name: 'another-test',
             script: ['echo "test"'],
             stage: 'test',
-            variables: { TEST_VAR: 'another_test_value' }
-          }
-        }
+            variables: { TEST_VAR: 'another_test_value' },
+          },
+        },
       };
-      
+
       const extendedProject = new GitLabProjectImpl([...mockFiles, additionalFile]);
       const jobs = extendedProject.getJobsWithVariable('TEST_VAR');
-      
+
       expect(jobs).toHaveLength(2);
       expect(jobs.map(job => job.name)).toEqual(['test-job', 'another-test']);
     });
 
     it('should return empty array when no jobs have the variable', () => {
       const jobs = mockProject.getJobsWithVariable('NON_EXISTENT_VAR');
-      
+
       expect(jobs).toEqual([]);
     });
 
@@ -160,15 +151,15 @@ describe('GitLabProjectImpl', () => {
             'no-vars-job': {
               name: 'no-vars-job',
               script: ['echo "no vars"'],
-              stage: 'test'
-            }
-          }
-        }
+              stage: 'test',
+            },
+          },
+        },
       ];
-      
+
       const projectWithoutVars = new GitLabProjectImpl(jobsWithoutVars);
       const jobs = projectWithoutVars.getJobsWithVariable('ANY_VAR');
-      
+
       expect(jobs).toEqual([]);
     });
   });
@@ -176,28 +167,28 @@ describe('GitLabProjectImpl', () => {
   describe('getJobsByStage', () => {
     it('should return jobs from specific stage', () => {
       const testJobs = mockProject.getJobsByStage('test');
-      
+
       expect(testJobs).toHaveLength(2);
       expect(testJobs.map(job => job.name)).toEqual(['test-job', 'include-job']);
     });
 
     it('should return jobs from build stage', () => {
       const buildJobs = mockProject.getJobsByStage('build');
-      
+
       expect(buildJobs).toHaveLength(1);
       expect(buildJobs[0].name).toBe('build-job');
     });
 
     it('should return jobs from deploy stage', () => {
       const deployJobs = mockProject.getJobsByStage('deploy');
-      
+
       expect(deployJobs).toHaveLength(1);
       expect(deployJobs[0].name).toBe('deploy-job');
     });
 
     it('should return empty array for non-existent stage', () => {
       const jobs = mockProject.getJobsByStage('non-existent');
-      
+
       expect(jobs).toEqual([]);
     });
 
@@ -209,15 +200,15 @@ describe('GitLabProjectImpl', () => {
           jobs: {
             'no-stage-job': {
               name: 'no-stage-job',
-              script: ['echo "no stage"']
-            }
-          }
-        }
+              script: ['echo "no stage"'],
+            },
+          },
+        },
       ];
-      
+
       const projectWithoutStage = new GitLabProjectImpl(jobsWithoutStage);
       const jobs = projectWithoutStage.getJobsByStage('any-stage');
-      
+
       expect(jobs).toEqual([]);
     });
   });
@@ -225,19 +216,19 @@ describe('GitLabProjectImpl', () => {
   describe('getFileVariables', () => {
     it('should return variables from specific file', () => {
       const variables = mockProject.getFileVariables('/project/.gitlab-ci.yml');
-      
+
       expect(variables).toEqual({ GLOBAL_VAR: 'global_value' });
     });
 
     it('should return variables from include file', () => {
       const variables = mockProject.getFileVariables('/project/.gitlab/includes.yml');
-      
+
       expect(variables).toEqual({ INCLUDE_VAR: 'include_value' });
     });
 
     it('should return empty object for non-existent file', () => {
       const variables = mockProject.getFileVariables('/project/non-existent.yml');
-      
+
       expect(variables).toEqual({});
     });
 
@@ -246,13 +237,13 @@ describe('GitLabProjectImpl', () => {
         {
           path: '/project/no-vars.yml',
           variables: {},
-          jobs: {}
-        }
+          jobs: {},
+        },
       ];
-      
+
       const projectWithoutVars = new GitLabProjectImpl(filesWithoutVars);
       const variables = projectWithoutVars.getFileVariables('/project/no-vars.yml');
-      
+
       expect(variables).toEqual({});
     });
 
@@ -260,14 +251,57 @@ describe('GitLabProjectImpl', () => {
       const filesWithUndefinedVars: GitLabFile[] = [
         {
           path: '/project/undefined-vars.yml',
-          jobs: {}
-        }
+          jobs: {},
+        },
       ];
-      
+
       const projectWithUndefinedVars = new GitLabProjectImpl(filesWithUndefinedVars);
       const variables = projectWithUndefinedVars.getFileVariables('/project/undefined-vars.yml');
-      
+
       expect(variables).toEqual({});
+    });
+  });
+
+  describe('job structure validation', () => {
+    it('should have jobs with all expected properties', () => {
+      const allJobs = mockProject.getAllJobs();
+
+      expect(allJobs.length).toBeGreaterThan(0);
+
+      // Check that jobs have expected structure
+      allJobs.forEach(job => {
+        expect(job.name).toBeDefined();
+        expect(typeof job.name).toBe('string');
+        expect(job.script).toBeInstanceOf(Array);
+        expect(job.variables).toBeInstanceOf(Object);
+      });
+    });
+
+    it('should handle jobs with minimal data', () => {
+      const minimalJobsFile: GitLabFile = {
+        path: '/project/minimal.yml',
+        variables: {},
+        jobs: {
+          'minimal-job': {
+            name: 'minimal-job',
+            script: ['echo "minimal"'],
+            variables: {},
+          },
+        },
+      };
+
+      const projectWithMinimalJob = new GitLabProjectImpl([minimalJobsFile]);
+      const allJobs = projectWithMinimalJob.getAllJobs();
+
+      const minimalJob = allJobs.find(job => job.name === 'minimal-job');
+
+      expect(minimalJob).toBeDefined();
+      expect(minimalJob!.name).toBe('minimal-job');
+      expect(minimalJob!.script).toBeInstanceOf(Array);
+      expect(minimalJob!.variables).toBeInstanceOf(Object);
+      expect(minimalJob!.before_script).toBeUndefined();
+      expect(minimalJob!.after_script).toBeUndefined();
+      expect(minimalJob!.stage).toBeUndefined();
     });
   });
 });
