@@ -1,0 +1,68 @@
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  GLOBAL_VAR: "global_value"
+  NODE_VERSION: "18"
+
+# Define reusable script blocks
+.scripts:
+  build_script: &build_script
+    - echo "Building application"
+    - npm run build
+  test_script: &test_script
+    - echo "Running tests"
+    - npm test
+
+build-job:
+  stage: build
+  script: !reference [.scripts, build_script]
+  variables:
+    BUILD_VAR: "build_value"
+  artifacts:
+    paths:
+      - dist/
+
+test-job:
+  stage: test
+  script: !reference [.scripts, test_script]
+  variables:
+    TEST_VAR: "test_value"
+  needs:
+    - build-job
+
+deploy-job:
+  stage: deploy
+  script:
+    - echo "Deploying application"
+    - npm run deploy
+  variables:
+    DEPLOY_VAR: "deploy_value"
+  only:
+    - main
+
+# Job with reference to variables
+reference-variables-job:
+  stage: test
+  script:
+    - echo "Using referenced variables"
+  variables: !reference [.variables, test_variables]
+
+.variables:
+  test_variables:
+    REF_VAR: "referenced_value"
+    ANOTHER_VAR: "another_value"
+
+# Job with reference to rules
+reference-rules-job:
+  stage: test
+  script:
+    - echo "Using referenced rules"
+  rules: !reference [.rules, main_branch_rules]
+
+.rules:
+  main_branch_rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_TAG'

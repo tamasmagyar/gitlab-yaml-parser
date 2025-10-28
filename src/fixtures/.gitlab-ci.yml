@@ -1,0 +1,50 @@
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  GLOBAL_VAR: "global_value"
+  NODE_VERSION: "18"
+
+build-job:
+  stage: build
+  script:
+    - echo "Building application"
+    - npm run build
+  variables:
+    BUILD_VAR: "build_value"
+  artifacts:
+    paths:
+      - dist/
+
+test-job:
+  stage: test
+  script:
+    - echo "Running tests"
+    - npm test
+  variables:
+    TEST_VAR: "test_value"
+  needs:
+    - build-job
+
+deploy-job:
+  stage: deploy
+  script:
+    - echo "Deploying application"
+    - npm run deploy
+  variables:
+    DEPLOY_VAR: "deploy_value"
+  only:
+    - main
+
+.hidden-job:
+  script:
+    - echo "This should be hidden"
+
+include-job:
+  stage: test
+  script:
+    - echo "This is an included job"
+  variables:
+    INCLUDE_VAR: "include_value"

@@ -1,7 +1,7 @@
 {
   "name": "gitlab-yaml-parser",
-  "version": "0.1.0",
-  "description": "A GitLab YAML parser library",
+  "version": "0.1.1",
+  "description": "A comprehensive TypeScript library for parsing and analyzing GitLab CI/CD YAML configurations",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -12,25 +12,54 @@
     "format": "prettier --write src/**/*.ts",
     "format:check": "prettier --check src/**/*.ts",
     "clean": "rm -rf dist",
-    "prebuild": "yarn clean"
+    "prebuild": "yarn clean",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "keywords": [
     "gitlab",
     "yaml",
-    "parser"
+    "parser",
+    "ci",
+    "gitlab-ci",
+    "pipeline",
+    "automation"
   ],
-  "author": "",
+  "author": "Tamas Magyar",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tamasmagyar/gitlab-yaml-parser.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tamasmagyar/gitlab-yaml-parser/issues"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
   "packageManager": "yarn@4.6.0",
   "devDependencies": {
     "@eslint/js": "^9.38.0",
+    "@types/glob": "^9.0.0",
+    "@types/jest": "^29.5.12",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.9.1",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
+    "jest": "^29.7.0",
     "prettier": "^3.6.2",
-    "typescript": "^5.9.3"
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.2"
+  },
+  "dependencies": {
+    "glob": "^11.0.3",
+    "js-yaml": "^4.1.0"
   }
 }

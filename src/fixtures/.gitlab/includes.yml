@@ -1,0 +1,16 @@
+variables:
+  INCLUDE_VAR: "include_value"
+
+include-job:
+  stage: test
+  script:
+    - echo "This is an included job"
+  variables:
+    INCLUDE_JOB_VAR: "include_job_value"
+
+another-include-job:
+  stage: build
+  script:
+    - echo "Another included job"
+  variables:
+    ANOTHER_VAR: "another_value"
